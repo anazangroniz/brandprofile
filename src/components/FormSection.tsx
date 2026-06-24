@@ -50,109 +50,69 @@ export default function FormSection({
   const validateField = (name: string, value: any): string | null => {
     switch (name) {
       case "url":
-        if (!value) {
-          return "Primary Domain URL is required (e.g., https://www.yourbrand.com).";
-        }
+        if (!value) return "Required — e.g. https://www.yourbrand.com";
         try {
           const parsed = new URL(value);
-          if (!parsed.protocol.startsWith("http")) {
-            return "URL protocol must be http or https (e.g., https://www.yourbrand.com).";
-          }
+          if (!parsed.protocol.startsWith("http")) return "Must start with http:// or https://";
         } catch (_) {
-          return "Please enter a valid URL (e.g., https://www.yourbrand.com).";
+          return "Enter a valid URL — e.g. https://www.yourbrand.com";
         }
         return null;
 
       case "brandName":
-        if (!value || !value.trim()) {
-          return "Brand Name is required (e.g., Apple, Acme Corp).";
-        }
-        if (value.trim().length < 2) {
-          return "Brand Name must be at least 2 characters long.";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 2) return "At least 2 characters";
         return null;
 
       case "industry":
-        if (!value) {
-          return "Please select an industry from the dropdown menu.";
-        }
+        if (!value) return "Please select an industry";
         return null;
 
       case "tagline":
-        if (!value || !value.trim()) {
-          return "Brand Tagline is required to summarize your value proposition.";
-        }
-        if (value.trim().length < 5) {
-          return "Brand Tagline must be at least 5 characters long.";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 5) return "At least 5 characters";
         return null;
 
       case "about":
-        if (!value || !value.trim()) {
-          return "About the Company description is required to provide brand context.";
-        }
-        if (value.trim().length < 15) {
-          return "Please provide more details about the company (at least 15 characters).";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 15) return "At least 15 characters";
         return null;
 
       case "city":
-        if (!value || !value.trim()) {
-          return "City name is required (e.g., San Francisco, Austin).";
-        }
-        if (value.trim().length < 2) {
-          return "City name must be at least 2 characters long.";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 2) return "At least 2 characters";
         return null;
 
       case "state":
-        if (!value) {
-          return "Please select a primary State from the dropdown menu.";
-        }
+        if (!value) return "Please select a state";
         return null;
 
       case "primaryMarketRegion":
-        if (!value) {
-          return "Please select a primary market region from the dropdown.";
-        }
+        if (!value) return "Please select a region";
         return null;
 
-      case "facebook":
-        if (!value || !value.trim()) {
-          return "Facebook Page username is required (e.g., brandname).";
-        }
+      case "facebook": {
+        if (!value || !value.trim()) return "Required";
         const fbRegex = /^[a-zA-Z0-9.]{3,}$/;
-        if (!fbRegex.test(value.trim())) {
-          return "Please enter a valid Facebook username (at least 3 characters, alphanumeric or periods).";
-        }
+        if (!fbRegex.test(value.trim())) return "At least 3 characters, letters, numbers or periods only";
         return null;
+      }
 
-      case "instagram":
-        if (!value || !value.trim()) {
-          return "Instagram Handle is required (e.g., brandname).";
-        }
+      case "instagram": {
+        if (!value || !value.trim()) return "Required";
         const igRegex = /^[a-zA-Z0-9._]{3,}$/;
-        if (!igRegex.test(value.trim())) {
-          return "Please enter a valid Instagram handle (at least 3 characters, alphanumeric, periods, or underscores).";
-        }
+        if (!igRegex.test(value.trim())) return "At least 3 characters, letters, numbers, periods or underscores";
         return null;
+      }
 
       case "googleBusiness":
-        if (!value || !value.trim()) {
-          return "Google Business Profile name is required.";
-        }
-        if (value.trim().length < 3) {
-          return "Google Business Profile name must be at least 3 characters.";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 3) return "At least 3 characters";
         return null;
 
       case "socialContext":
-        if (!value || !value.trim()) {
-          return "Social Positioning Context is required to guide messaging.";
-        }
-        if (value.trim().length < 10) {
-          return "Please enter at least 10 characters describing your social strategy.";
-        }
+        if (!value || !value.trim()) return "Required";
+        if (value.trim().length < 10) return "At least 10 characters";
         return null;
 
       default:
@@ -206,25 +166,6 @@ export default function FormSection({
     }
   };
 
-  React.useEffect(() => {
-    if (uploadedFiles.length > 0 && errors.uploadedFiles) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next.uploadedFiles;
-        return next;
-      });
-    }
-  }, [uploadedFiles, errors.uploadedFiles]);
-
-  React.useEffect(() => {
-    if (uploadedTranscripts.length > 0 && errors.uploadedTranscripts) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next.uploadedTranscripts;
-        return next;
-      });
-    }
-  }, [uploadedTranscripts, errors.uploadedTranscripts]);
 
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -270,104 +211,12 @@ export default function FormSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const fields = ["url", "brandName", "industry", "tagline", "about", "city", "state", "primaryMarketRegion", "facebook", "instagram", "googleBusiness", "socialContext"];
     const newErrors: Record<string, string> = {};
-
-    // URL Validation
-    if (!formData.url) {
-      newErrors.url = "Primary Domain URL is required.";
-    } else {
-      try {
-        const parsed = new URL(formData.url);
-        if (!parsed.protocol.startsWith("http")) {
-          newErrors.url = "URL protocol must be http or https.";
-        }
-      } catch (_) {
-        newErrors.url = "Please enter a valid URL (e.g., https://www.yourbrand.com).";
-      }
-    }
-
-    // Brand Name Validation
-    if (!formData.brandName.trim()) {
-      newErrors.brandName = "Brand Name is required.";
-    } else if (formData.brandName.trim().length < 2) {
-      newErrors.brandName = "Brand Name must be at least 2 characters long.";
-    }
-
-    // Industry Validation
-    if (!formData.industry) {
-      newErrors.industry = "Please select an industry.";
-    }
-
-    // Tagline Validation
-    if (!formData.tagline.trim()) {
-      newErrors.tagline = "Brand Tagline is required.";
-    } else if (formData.tagline.trim().length < 5) {
-      newErrors.tagline = "Brand Tagline must be at least 5 characters long.";
-    }
-
-    // About/Backstory Validation
-    if (!formData.about.trim()) {
-      newErrors.about = "About the Company description is required.";
-    } else if (formData.about.trim().length < 15) {
-      newErrors.about = "Please provide more details about the company (at least 15 characters).";
-    }
-
-    // Primary City Validation
-    if (!formData.city || !formData.city.trim()) {
-      newErrors.city = "City name is required.";
-    } else if (formData.city.trim().length < 2) {
-      newErrors.city = "City name must be at least 2 characters long.";
-    }
-
-    // State Validation
-    if (!formData.state) {
-      newErrors.state = "Please select a State from the dropdown.";
-    }
-
-    // Primary Market Region Validation (synced with state)
-    if (!formData.primaryMarketRegion) {
-      newErrors.primaryMarketRegion = "Please select a primary market region.";
-    }
-
-    // Facebook Validation
-    if (!formData.facebook.trim()) {
-      newErrors.facebook = "Facebook Page username is required.";
-    } else {
-      const fbRegex = /^[a-zA-Z0-9.]{3,}$/;
-      if (!fbRegex.test(formData.facebook.trim())) {
-        newErrors.facebook = "Please enter a valid Facebook username (at least 3 characters, alphanumeric or periods).";
-      }
-    }
-
-    // Instagram Validation
-    if (!formData.instagram.trim()) {
-      newErrors.instagram = "Instagram Handle is required.";
-    } else {
-      const igRegex = /^[a-zA-Z0-9._]{3,}$/;
-      if (!igRegex.test(formData.instagram.trim())) {
-        newErrors.instagram = "Please enter a valid Instagram handle (at least 3 characters, alphanumeric, periods, or underscores).";
-      }
-    }
-
-    // Google Business Validation
-    if (!formData.googleBusiness.trim()) {
-      newErrors.googleBusiness = "Google Business Profile is required.";
-    } else if (formData.googleBusiness.trim().length < 3) {
-      newErrors.googleBusiness = "Google Business Profile name must be at least 3 characters.";
-    }
-
-    // Social Context Validation
-    if (!formData.socialContext.trim()) {
-      newErrors.socialContext = "Social Positioning Context is required.";
-    } else if (formData.socialContext.trim().length < 10) {
-      newErrors.socialContext = "Please enter at least 10 characters describing your social strategy.";
-    }
-
-    // Knowledge Base Documents Validation
-    if (uploadedFiles.length === 0) {
-      newErrors.uploadedFiles = "Please upload at least one brand guideline, whitepaper, or report.";
-    }
-
+    fields.forEach((field) => {
+      const err = validateField(field, (formData as any)[field]);
+      if (err) newErrors[field] = err;
+    });
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
@@ -397,7 +246,7 @@ export default function FormSection({
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-grow w-full">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Primary Domain URL
+              Primary Domain URL <span className="text-red-500">*</span>
             </label>
             <input
               type="url"
@@ -406,10 +255,10 @@ export default function FormSection({
               value={formData.url}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all placeholder:text-secondary/40 text-primary text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all placeholder:text-secondary/40 text-primary text-sm ${
                 errors.url
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="https://www.yourbrand.com"
             />
@@ -449,7 +298,7 @@ export default function FormSection({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Brand Name
+              Brand Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -458,10 +307,10 @@ export default function FormSection({
               value={formData.brandName}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                 errors.brandName
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="Official Brand Name"
             />
@@ -475,7 +324,7 @@ export default function FormSection({
 
           <div>
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Industry
+              Industry <span className="text-red-500">*</span>
             </label>
             <select
               name="industry"
@@ -483,10 +332,10 @@ export default function FormSection({
               value={formData.industry}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                 errors.industry
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
             >
               <option value="">Select Industry</option>
@@ -506,7 +355,7 @@ export default function FormSection({
 
           <div className="md:col-span-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Brand Tagline
+              Brand Tagline <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -515,10 +364,10 @@ export default function FormSection({
               value={formData.tagline}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                 errors.tagline
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="e.g. Empowering the Future of Enterprise Finance"
             />
@@ -532,7 +381,7 @@ export default function FormSection({
 
           <div className="md:col-span-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              About the Company
+              About the Company <span className="text-red-500">*</span>
             </label>
             <textarea
               name="about"
@@ -540,10 +389,10 @@ export default function FormSection({
               value={formData.about}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary resize-none text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary resize-none text-sm ${
                 errors.about
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="Detailed mission statement and value proposition..."
               rows={4}
@@ -569,7 +418,7 @@ export default function FormSection({
           <div className="lg:col-span-1 space-y-6">
             <div>
               <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-                City Name
+                City Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -578,10 +427,10 @@ export default function FormSection({
                 value={formData.city}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+                className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                   errors.city
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                    ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                    : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
                 }`}
                 placeholder="e.g. San Francisco"
               />
@@ -595,7 +444,7 @@ export default function FormSection({
 
             <div>
               <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-                State (USA)
+                State (USA) <span className="text-red-500">*</span>
               </label>
               <select
                 name="state"
@@ -603,10 +452,10 @@ export default function FormSection({
                 value={formData.state}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+                className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                   errors.state
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                    ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                    : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
                 }`}
               >
                 <option value="">Select Primary State</option>
@@ -654,7 +503,7 @@ export default function FormSection({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Facebook Page
+              Facebook Page <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">/</span>
@@ -665,10 +514,10 @@ export default function FormSection({
                 value={formData.facebook}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`w-full bg-[#fafafc] border rounded pl-8 pr-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+                className={`w-full border rounded pl-8 pr-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                   errors.facebook
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                    ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                    : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
                 }`}
                 placeholder="username"
               />
@@ -683,7 +532,7 @@ export default function FormSection({
 
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Instagram Handle
+              Instagram Handle <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">@</span>
@@ -694,10 +543,10 @@ export default function FormSection({
                 value={formData.instagram}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`w-full bg-[#fafafc] border rounded pl-8 pr-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+                className={`w-full border rounded pl-8 pr-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                   errors.instagram
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                    ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                    : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
                 }`}
                 placeholder="brand"
               />
@@ -712,7 +561,7 @@ export default function FormSection({
 
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Google Business Profile
+              Google Business Profile <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -721,10 +570,10 @@ export default function FormSection({
               value={formData.googleBusiness}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary text-sm ${
                 errors.googleBusiness
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="Search listing name"
             />
@@ -738,7 +587,7 @@ export default function FormSection({
 
           <div className="md:col-span-3">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Social Positioning Context
+              Social Positioning Context <span className="text-red-500">*</span>
             </label>
             <textarea
               name="socialContext"
@@ -746,10 +595,10 @@ export default function FormSection({
               value={formData.socialContext}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`w-full bg-[#fafafc] border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary resize-none text-sm ${
+              className={`w-full border rounded px-4 py-3 focus:ring-2 outline-none transition-all text-primary resize-none text-sm ${
                 errors.socialContext
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-secondary/20 focus:ring-primary focus:border-transparent"
+                  ? "bg-red-50/50 border-red-400 focus:ring-red-400 focus:border-red-400"
+                  : "bg-[#fafafc] border-secondary/20 focus:ring-primary focus:border-transparent"
               }`}
               placeholder="Briefly describe the brand's tone of voice and core messaging strategy on social channels."
               rows={3}
@@ -916,9 +765,17 @@ export default function FormSection({
 
       {/* CTA Section */}
       <div className="pt-12 border-t border-secondary/15 flex flex-col md:flex-row justify-between items-center gap-8">
-        <div className="flex items-center gap-2 text-secondary">
-          <Info className="w-5 h-5 text-secondary shrink-0" />
-          <p className="text-xs italic">All data is processed securely through our Tier 4 intelligence protocols.</p>
+        <div className="flex flex-col gap-2">
+          {Object.keys(errors).length > 0 && (
+            <p className="flex items-center gap-1.5 text-red-600 text-xs font-semibold animate-fadeIn">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {Object.keys(errors).length} {Object.keys(errors).length === 1 ? "field requires" : "fields require"} attention
+            </p>
+          )}
+          <div className="flex items-center gap-2 text-secondary">
+            <Info className="w-5 h-5 text-secondary shrink-0" />
+            <p className="text-xs italic">All data is processed securely through our Tier 4 intelligence protocols.</p>
+          </div>
         </div>
         <button
           type="submit"
