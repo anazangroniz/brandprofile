@@ -1,0 +1,6 @@
+{
+  "name": "BVM Profiler",
+  "description": "Intelligent Profiling Dashboard. Consolidate brand intelligence and scan domain details for deep-scan analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
