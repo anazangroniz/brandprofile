@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { BrandFormData, UploadedFile } from "../types";
-import { Globe, Building2, Share2, UploadCloud, FileText, Trash2, Search, CheckSquare, Square, Rocket, Map, Info, AlertCircle } from "lucide-react";
+import { Globe, Building2, Share2, UploadCloud, FileText, Trash2, Search, Rocket, Info, AlertCircle } from "lucide-react";
+import USMap from "./USMap";
 
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
@@ -474,21 +475,18 @@ export default function FormSection({
             </div>
           </div>
 
-          <div className="lg:col-span-2 relative h-full min-h-[300px] rounded overflow-hidden border border-secondary/15 group">
-            <div className="absolute inset-0 bg-[#0d1d33] flex items-center justify-center">
-              <Map className="text-white/30 w-12 h-12 animate-pulse" />
-            </div>
-            <img
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
-              alt="USA Market Map"
-              referrerPolicy="no-referrer"
-              src="/src/assets/images/usa_map_slate_1782228469009.jpg"
-            />
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded border border-secondary/20 shadow-sm">
+          <div className="lg:col-span-2 bg-surface-bright rounded border border-secondary/15 p-5">
+            <div className="flex items-center justify-between mb-3">
               <span className="font-sans text-[10px] font-bold text-primary uppercase tracking-wider">
-                MARKET DENSITY PREVIEW
+                Market Density Preview
               </span>
+              {formData.state && (
+                <span className="text-[10px] text-secondary italic">
+                  Hover any state for details
+                </span>
+              )}
             </div>
+            <USMap selectedState={formData.state} />
           </div>
         </div>
       </section>
