@@ -1,8 +1,4 @@
-import React, { useMemo } from "react";
-import { feature } from "topojson-client";
-import type { Topology, GeometryCollection } from "topojson-specification";
-// @ts-ignore
-import topologyData from "us-atlas/states-10m.json";
+import React, { useState } from "react";
 
 interface USMapProps {
   selectedState: string;
@@ -10,43 +6,52 @@ interface USMapProps {
 
 // Population density per sq mile — 2020 US Census
 const DENSITY: Record<string, number> = {
-  Alabama: 100, Alaska: 1, Arizona: 64, Arkansas: 57, California: 254,
-  Colorado: 56, Connecticut: 741, Delaware: 504, Florida: 401, Georgia: 186,
-  Hawaii: 224, Idaho: 22, Illinois: 232, Indiana: 189, Iowa: 57, Kansas: 35,
-  Kentucky: 114, Louisiana: 107, Maine: 43, Maryland: 636, Massachusetts: 902,
-  Michigan: 178, Minnesota: 71, Mississippi: 63, Missouri: 89, Montana: 7,
-  Nebraska: 25, Nevada: 29, "New Hampshire": 153, "New Jersey": 1263,
-  "New Mexico": 17, "New York": 428, "North Carolina": 214, "North Dakota": 11,
-  Ohio: 289, Oklahoma: 57, Oregon: 44, Pennsylvania: 290, "Rhode Island": 1061,
-  "South Carolina": 170, "South Dakota": 11, Tennessee: 167, Texas: 111,
-  Utah: 40, Vermont: 68, Virginia: 216, Washington: 116, "West Virginia": 77,
-  Wisconsin: 108, Wyoming: 6,
+  AL: 100, AK: 1, AZ: 64, AR: 57, CA: 254, CO: 56, CT: 741, DE: 504,
+  FL: 401, GA: 186, HI: 224, ID: 22, IL: 232, IN: 189, IA: 57, KS: 35,
+  KY: 114, LA: 107, ME: 43, MD: 636, MA: 902, MI: 178, MN: 71, MS: 63,
+  MO: 89, MT: 7, NE: 25, NV: 29, NH: 153, NJ: 1263, NM: 17, NY: 428,
+  NC: 214, ND: 11, OH: 289, OK: 57, OR: 44, PA: 290, RI: 1061, SC: 170,
+  SD: 11, TN: 167, TX: 111, UT: 40, VT: 68, VA: 216, WA: 116, WV: 77,
+  WI: 108, WY: 6,
 };
 
-// FIPS → state name (US Census codes)
-const FIPS: Record<string, string> = {
-  "01": "Alabama", "02": "Alaska", "04": "Arizona", "05": "Arkansas",
-  "06": "California", "08": "Colorado", "09": "Connecticut", "10": "Delaware",
-  "12": "Florida", "13": "Georgia", "15": "Hawaii", "16": "Idaho",
-  "17": "Illinois", "18": "Indiana", "19": "Iowa", "20": "Kansas",
-  "21": "Kentucky", "22": "Louisiana", "23": "Maine", "24": "Maryland",
-  "25": "Massachusetts", "26": "Michigan", "27": "Minnesota", "28": "Mississippi",
-  "29": "Missouri", "30": "Montana", "31": "Nebraska", "32": "Nevada",
-  "33": "New Hampshire", "34": "New Jersey", "35": "New Mexico", "36": "New York",
-  "37": "North Carolina", "38": "North Dakota", "39": "Ohio", "40": "Oklahoma",
-  "41": "Oregon", "42": "Pennsylvania", "44": "Rhode Island", "45": "South Carolina",
-  "46": "South Dakota", "47": "Tennessee", "48": "Texas", "49": "Utah",
-  "50": "Vermont", "51": "Virginia", "53": "Washington", "54": "West Virginia",
-  "55": "Wisconsin", "56": "Wyoming",
+const ABBR_TO_NAME: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
+  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi",
+  MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
+  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina",
+  ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
+  RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee",
+  TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington",
+  WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
 };
 
-function getDensityColor(density: number, isSelected: boolean): string {
-  if (isSelected) return "#0a1a30";
-  if (density >= 500) return "#1d5a8e";
+// Standard tile-grid layout — geographic approximation (11 cols × 8 rows)
+const GRID: (string | null)[][] = [
+  ["AK", null, null, null, null, null, null, null, null, null, "ME"],
+  [null, null, null, null, null, null, null, null, "VT", "NH", null],
+  ["WA", "ID", "MT", "ND", "MN", "WI", null, "MI", "NY", "MA", "RI"],
+  ["OR", "NV", "WY", "SD", "IA", "IL", "IN", "OH", "PA", "CT", "NJ"],
+  ["CA", "UT", "CO", "NE", "MO", "KY", "WV", "VA", "MD", "DE", null],
+  [null, "AZ", "NM", "KS", "AR", "TN", "NC", "SC", null, null, null],
+  [null, null, null, "OK", "LA", "MS", "AL", "GA", null, null, null],
+  ["HI", null, null, "TX", null, null, null, "FL", null, null, null],
+];
+
+function getDensityColor(density: number): string {
+  if (density >= 500) return { bg: "#1d5a8e", text: "#ffffff" }.bg;
   if (density >= 200) return "#4a7db5";
   if (density >= 75)  return "#7aa8d4";
   if (density >= 20)  return "#b3cfea";
-  return "#c8ddf2";
+  return "#dce8f7";
+}
+
+function getDensityTextColor(density: number): string {
+  if (density >= 200) return "#ffffff";
+  return "#0a1a30";
 }
 
 function getDensityLabel(density: number): string {
@@ -57,78 +62,78 @@ function getDensityLabel(density: number): string {
   return "Very Low";
 }
 
-function ringToPath(ring: number[][]): string {
-  return ring.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("") + "Z";
-}
-
-function geomToPath(geometry: { type: string; coordinates: unknown }): string {
-  if (geometry.type === "Polygon") {
-    return (geometry.coordinates as number[][][]).map(ringToPath).join(" ");
-  }
-  if (geometry.type === "MultiPolygon") {
-    return (geometry.coordinates as number[][][][])
-      .map((poly) => poly.map(ringToPath).join(" "))
-      .join(" ");
-  }
-  return "";
-}
-
 export default function USMap({ selectedState }: USMapProps) {
-  const [hovered, setHovered] = React.useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
 
-  const paths = useMemo(() => {
-    const topo = topologyData as unknown as Topology<{ states: GeometryCollection }>;
-    const geojson = feature(topo, topo.objects.states);
-    return geojson.features
-      .map((f) => {
-        const fips = String(f.id).padStart(2, "0");
-        const name = FIPS[fips] || fips;
-        const d = f.geometry ? geomToPath(f.geometry as { type: string; coordinates: unknown }) : "";
-        return { id: fips, name, d };
-      })
-      .filter((p) => p.d.length > 0);
-  }, []);
+  // Convert full state name → abbreviation for matching
+  const selectedAbbr = Object.entries(ABBR_TO_NAME).find(
+    ([, name]) => name === selectedState
+  )?.[0] ?? null;
 
-  const activeState = hovered || selectedState;
-  const activeDensity = activeState ? (DENSITY[activeState] ?? null) : null;
+  const activeAbbr = hovered || selectedAbbr;
+  const activeName = activeAbbr ? ABBR_TO_NAME[activeAbbr] : null;
+  const activeDensity = activeAbbr ? (DENSITY[activeAbbr] ?? null) : null;
 
   return (
     <div className="w-full">
-      <svg
-        viewBox="0 0 960 600"
-        className="w-full h-auto"
-        style={{ maxHeight: "340px" }}
-        role="img"
-        aria-label="US population density map"
-      >
-        {paths.map(({ id, name, d }) => {
-          const density = DENSITY[name] ?? 0;
-          const isSelected = name === selectedState;
-          const isHovered = name === hovered;
-          const fill = getDensityColor(density, isSelected);
+      {/* Tile grid */}
+      <div className="w-full overflow-x-auto">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(11, 1fr)",
+            gap: "3px",
+            maxWidth: "100%",
+          }}
+        >
+          {GRID.map((row, r) =>
+            row.map((abbr, c) => {
+              if (!abbr) {
+                return <div key={`${r}-${c}`} />;
+              }
+              const density = DENSITY[abbr] ?? 0;
+              const isSelected = abbr === selectedAbbr;
+              const isHovered = abbr === hovered;
+              const bg = isSelected ? "#0a1a30" : getDensityColor(density);
+              const textColor = isSelected ? "#ffffff" : getDensityTextColor(density);
 
-          return (
-            <path
-              key={id}
-              d={d}
-              fill={fill}
-              stroke="#ffffff"
-              strokeWidth={isSelected ? 2 : isHovered ? 1.5 : 0.5}
-              strokeLinejoin="round"
-              style={{ transition: "fill 0.15s ease, stroke-width 0.1s ease", cursor: "pointer" }}
-              onMouseEnter={() => setHovered(name)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <title>{name}: {(DENSITY[name] ?? 0).toLocaleString()} people/mi²</title>
-            </path>
-          );
-        })}
-      </svg>
+              return (
+                <div
+                  key={abbr}
+                  title={`${ABBR_TO_NAME[abbr]}: ${density.toLocaleString()} people/mi²`}
+                  onMouseEnter={() => setHovered(abbr)}
+                  onMouseLeave={() => setHovered(null)}
+                  style={{
+                    backgroundColor: bg,
+                    color: textColor,
+                    aspectRatio: "1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    fontSize: "clamp(7px, 1.1vw, 11px)",
+                    fontWeight: isSelected || isHovered ? 700 : 500,
+                    letterSpacing: "0.02em",
+                    transition: "all 0.12s ease",
+                    outline: isHovered && !isSelected ? "2px solid #4a7db5" : "none",
+                    outlineOffset: "1px",
+                    transform: isHovered && !isSelected ? "scale(1.08)" : "scale(1)",
+                  }}
+                >
+                  {abbr}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
 
-      {activeState && activeDensity !== null && (
-        <div className="mt-2 flex items-center justify-between border-t border-secondary/10 pt-2">
+      {/* Active state info */}
+      {activeName && activeDensity !== null && (
+        <div className="mt-3 flex items-center justify-between border-t border-secondary/10 pt-3">
           <div>
-            <span className="block text-xs font-bold text-primary">{activeState}</span>
+            <span className="block text-xs font-bold text-primary">{activeName}</span>
             <span className="text-[10px] text-secondary">
               {activeDensity.toLocaleString()} people/mi²
             </span>
@@ -136,8 +141,8 @@ export default function USMap({ selectedState }: USMapProps) {
           <span
             className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
             style={{
-              background: getDensityColor(activeDensity, false) + "33",
-              color: getDensityColor(activeDensity, false),
+              background: getDensityColor(activeDensity) + "33",
+              color: getDensityColor(activeDensity) === "#dce8f7" ? "#4a7db5" : getDensityColor(activeDensity),
             }}
           >
             {getDensityLabel(activeDensity)}
@@ -145,10 +150,11 @@ export default function USMap({ selectedState }: USMapProps) {
         </div>
       )}
 
-      <div className="mt-2 flex items-center gap-3 flex-wrap">
+      {/* Legend */}
+      <div className="mt-3 flex items-center gap-3 flex-wrap">
         <span className="text-[9px] text-secondary font-bold uppercase tracking-wider shrink-0">pop/mi²</span>
         {[
-          { color: "#c8ddf2", label: "< 20" },
+          { color: "#dce8f7", label: "< 20" },
           { color: "#b3cfea", label: "20–75" },
           { color: "#7aa8d4", label: "75–200" },
           { color: "#4a7db5", label: "200–500" },
