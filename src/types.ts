@@ -91,6 +91,15 @@ export interface BrandProfile {
   };
   approved_facts: string[];
   source_references: { url: string; type: string }[];
+  _evidence: EvidenceRow[];
+}
+
+export interface EvidenceRow {
+  field: string;
+  value: string | null;
+  confidence: number;
+  evidenceSnippet: string | null;
+  sourceUrl: string | null;
 }
 
 export interface UploadedFile {

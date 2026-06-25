@@ -4,6 +4,7 @@ import {
   CheckCircle, Edit3, FileText, Copy, Check, BrainCircuit,
   PlusCircle, MinusCircle, AlertTriangle, Lightbulb, X,
   MapPin, ShoppingBag, Megaphone, ShieldOff, BadgeCheck,
+  Table2, LayoutDashboard, ExternalLink,
 } from "lucide-react";
 
 interface ProfileViewProps {
@@ -22,6 +23,7 @@ export default function ProfileView({
   onBackToForm,
 }: ProfileViewProps) {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"profile" | "evidence">("profile");
 
   const copyToClipboard = (text: string, sectionId: string) => {
     navigator.clipboard.writeText(text);
@@ -35,6 +37,101 @@ export default function ProfileView({
 
   return (
     <div className="space-y-12 animate-fadeIn">
+
+      {/* ── View toggle ── */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setViewMode("profile")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+            viewMode === "profile"
+              ? "bg-primary text-white"
+              : "bg-surface-container-lowest border border-secondary/20 text-secondary hover:text-primary"
+          }`}
+        >
+          <LayoutDashboard className="w-3.5 h-3.5" /> Profile View
+        </button>
+        <button
+          onClick={() => setViewMode("evidence")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+            viewMode === "evidence"
+              ? "bg-primary text-white"
+              : "bg-surface-container-lowest border border-secondary/20 text-secondary hover:text-primary"
+          }`}
+        >
+          <Table2 className="w-3.5 h-3.5" /> Evidence Table
+        </button>
+      </div>
+
+      {/* ── Evidence traceability table ── */}
+      {viewMode === "evidence" && (
+        <div className="animate-fadeIn">
+          <div className="mb-4">
+            <h3 className="font-headline text-xl font-bold text-primary mb-1">
+              Extracted Profile — evidence traceability
+            </h3>
+            <p className="text-xs text-secondary">
+              Every value shown with the source snippet + URL it came from. Unsupported fields were left null (not shown).
+            </p>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-secondary/15">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-[#f8fafc]">
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-secondary border-b border-secondary/15 w-48">Field</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-secondary border-b border-secondary/15 w-48">Value</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-secondary border-b border-secondary/15 w-12">Conf.</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-secondary border-b border-secondary/15">Evidence Snippet</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-secondary border-b border-secondary/15 w-40">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profile._evidence.filter(r => r.value !== null).map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-[#fafafa]"}>
+                    <td className="px-4 py-3 border-b border-secondary/10 align-top">
+                      <code className="text-[11px] text-[#2563eb] font-mono">{row.field}</code>
+                    </td>
+                    <td className="px-4 py-3 border-b border-secondary/10 align-top text-xs text-primary font-medium">
+                      {row.value}
+                    </td>
+                    <td className="px-4 py-3 border-b border-secondary/10 align-top">
+                      <span className={`text-xs font-bold tabular-nums ${
+                        row.confidence >= 0.9 ? "text-green-700" :
+                        row.confidence >= 0.75 ? "text-amber-700" : "text-red-600"
+                      }`}>
+                        {row.confidence.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 border-b border-secondary/10 align-top">
+                      {row.evidenceSnippet ? (
+                        <p className="text-xs text-secondary italic leading-relaxed">{row.evidenceSnippet}</p>
+                      ) : (
+                        <span className="text-[10px] text-secondary/40">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border-b border-secondary/10 align-top">
+                      {row.sourceUrl ? (
+                        <a
+                          href={row.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-[#2563eb] hover:underline flex items-center gap-1 break-all"
+                        >
+                          {row.sourceUrl.replace(/^https?:\/\//, "").split("/")[0]}
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-secondary/40">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {viewMode === "profile" && <>
 
       {/* ── Profile Header ── */}
       <div className="bg-[#0a1a30] text-white p-8 md:p-12 rounded-lg relative overflow-hidden">
@@ -470,6 +567,8 @@ export default function ProfileView({
           </ul>
         </div>
       </div>
+
+      </> }
 
     </div>
   );
