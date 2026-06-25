@@ -70,50 +70,41 @@ export default function FormSection({
         return null;
 
       case "tagline":
-        if (!value || !value.trim()) return "Required";
-        if (value.trim().length < 5) return "At least 5 characters";
+        if (value && value.trim().length > 0 && value.trim().length < 5) return "At least 5 characters";
         return null;
 
       case "about":
-        if (!value || !value.trim()) return "Required";
-        if (value.trim().length < 15) return "At least 15 characters";
+        if (value && value.trim().length > 0 && value.trim().length < 15) return "At least 15 characters";
         return null;
 
       case "city":
-        if (!value || !value.trim()) return "Required";
-        if (value.trim().length < 2) return "At least 2 characters";
+        if (value && value.trim().length > 0 && value.trim().length < 2) return "At least 2 characters";
         return null;
 
       case "state":
-        if (!value) return "Please select a state";
-        return null;
-
       case "primaryMarketRegion":
-        if (!value) return "Please select a region";
         return null;
 
       case "facebook": {
-        if (!value || !value.trim()) return "Required";
+        if (!value || !value.trim()) return null;
         const fbRegex = /^[a-zA-Z0-9.]{3,}$/;
-        if (!fbRegex.test(value.trim())) return "At least 3 characters, letters, numbers or periods only";
+        if (!fbRegex.test(value.trim())) return "Letters, numbers or periods only (min 3)";
         return null;
       }
 
       case "instagram": {
-        if (!value || !value.trim()) return "Required";
+        if (!value || !value.trim()) return null;
         const igRegex = /^[a-zA-Z0-9._]{3,}$/;
-        if (!igRegex.test(value.trim())) return "At least 3 characters, letters, numbers, periods or underscores";
+        if (!igRegex.test(value.trim())) return "Letters, numbers, periods or underscores (min 3)";
         return null;
       }
 
       case "googleBusiness":
-        if (!value || !value.trim()) return "Required";
-        if (value.trim().length < 3) return "At least 3 characters";
+        if (value && value.trim().length > 0 && value.trim().length < 3) return "At least 3 characters";
         return null;
 
       case "socialContext":
-        if (!value || !value.trim()) return "Required";
-        if (value.trim().length < 10) return "At least 10 characters";
+        if (value && value.trim().length > 0 && value.trim().length < 10) return "At least 10 characters";
         return null;
 
       default:
@@ -212,7 +203,7 @@ export default function FormSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const fields = ["url", "brandName", "industry", "tagline", "about", "city", "state", "primaryMarketRegion", "facebook", "instagram", "googleBusiness", "socialContext"];
+    const fields = ["url", "brandName", "industry", "tagline", "about", "city", "facebook", "instagram", "googleBusiness", "socialContext"];
     const newErrors: Record<string, string> = {};
     fields.forEach((field) => {
       const err = validateField(field, (formData as any)[field]);
@@ -356,7 +347,7 @@ export default function FormSection({
 
           <div className="md:col-span-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Brand Tagline <span className="text-red-500">*</span>
+              Brand Tagline
             </label>
             <input
               type="text"
@@ -382,7 +373,7 @@ export default function FormSection({
 
           <div className="md:col-span-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              About the Company <span className="text-red-500">*</span>
+              About the Company
             </label>
             <textarea
               name="about"
@@ -419,7 +410,7 @@ export default function FormSection({
           <div className="lg:col-span-1 space-y-6">
             <div>
               <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-                City Name <span className="text-red-500">*</span>
+                City Name
               </label>
               <input
                 type="text"
@@ -445,7 +436,7 @@ export default function FormSection({
 
             <div>
               <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-                State (USA) <span className="text-red-500">*</span>
+                State (USA)
               </label>
               <select
                 name="state"
@@ -501,7 +492,7 @@ export default function FormSection({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Facebook Page <span className="text-red-500">*</span>
+              Facebook Page
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">/</span>
@@ -530,7 +521,7 @@ export default function FormSection({
 
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Instagram Handle <span className="text-red-500">*</span>
+              Instagram Handle
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">@</span>
@@ -559,7 +550,7 @@ export default function FormSection({
 
           <div className="space-y-2">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Google Business Profile <span className="text-red-500">*</span>
+              Google Business Profile
             </label>
             <input
               type="text"
@@ -585,7 +576,7 @@ export default function FormSection({
 
           <div className="md:col-span-3">
             <label className="block font-sans text-[10px] font-bold text-primary uppercase tracking-wider mb-2">
-              Social Positioning Context <span className="text-red-500">*</span>
+              Social Positioning Context
             </label>
             <textarea
               name="socialContext"
