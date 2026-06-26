@@ -47,6 +47,39 @@ export default function FormSection({
   const [dragOver, setDragOver] = useState(false);
   const [transcriptDragOver, setTranscriptDragOver] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
+
+  const ALLOWED_TYPES: Record<string, string> = {
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/pdf": ".pdf",
+    "application/vnd.ms-excel": ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "text/csv": ".csv",
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+  };
+  const MAX_FILE_BYTES = 6 * 1024 * 1024; // 6 MB
+
+  const filterFiles = (
+    files: FileList,
+    setError: (msg: string | null) => void
+  ): FileList => {
+    const rejected: string[] = [];
+    const dt = new DataTransfer();
+    Array.from(files).forEach((f) => {
+      if (!ALLOWED_TYPES[f.type]) {
+        rejected.push(`"${f.name}" — unsupported format`);
+      } else if (f.size > MAX_FILE_BYTES) {
+        rejected.push(`"${f.name}" — exceeds 6 MB`);
+      } else {
+        dt.items.add(f);
+      }
+    });
+    setError(rejected.length > 0 ? rejected.join("; ") : null);
+    return dt.files;
+  };
 
   const validateField = (name: string, value: any): string | null => {
     switch (name) {
@@ -172,7 +205,8 @@ export default function FormSection({
     e.preventDefault();
     setDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onAddFiles(e.dataTransfer.files);
+      const valid = filterFiles(e.dataTransfer.files, setFileError);
+      if (valid.length > 0) onAddFiles(valid);
     }
   };
 
@@ -189,7 +223,8 @@ export default function FormSection({
     e.preventDefault();
     setTranscriptDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onAddTranscripts(e.dataTransfer.files);
+      const valid = filterFiles(e.dataTransfer.files, setTranscriptError);
+      if (valid.length > 0) onAddTranscripts(valid);
     }
   };
 
@@ -626,13 +661,20 @@ export default function FormSection({
             Drag and drop brand guidelines, whitepapers, or reports
           </p>
           <p className="text-secondary text-xs">
-            Supported formats: PDF, DOCX, PPTX (Max 25MB per file)
+            .doc, .docx, .pdf, .xls, .xlsx, .csv, .png, .jpg — max 6 MB per file
           </p>
           <input
             type="file"
             ref={fileInputRef}
             multiple
-            onChange={(e) => e.target.files && onAddFiles(e.target.files)}
+            accept=".doc,.docx,.pdf,.xls,.xlsx,.csv,.png,.jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/png,image/jpeg"
+            onChange={(e) => {
+              if (e.target.files) {
+                const valid = filterFiles(e.target.files, setFileError);
+                if (valid.length > 0) onAddFiles(valid);
+              }
+              e.target.value = "";
+            }}
             className="hidden"
             id="file-upload"
           />
@@ -648,6 +690,12 @@ export default function FormSection({
           <p className="text-red-600 text-xs font-semibold mt-3 flex items-center gap-1 animate-fadeIn">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             {errors.uploadedFiles}
+          </p>
+        )}
+        {fileError && (
+          <p className="text-red-600 text-xs font-semibold mt-3 flex items-center gap-1 animate-fadeIn">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {fileError}
           </p>
         )}
 
@@ -701,13 +749,20 @@ export default function FormSection({
             Drag and drop customer interview transcripts, sales recordings, or focus group files
           </p>
           <p className="text-secondary text-xs">
-            Supported formats: TXT, PDF, DOCX (Max 25MB per file)
+            .doc, .docx, .pdf, .xls, .xlsx, .csv, .png, .jpg — max 6 MB per file
           </p>
           <input
             type="file"
             ref={transcriptInputRef}
             multiple
-            onChange={(e) => e.target.files && onAddTranscripts(e.target.files)}
+            accept=".doc,.docx,.pdf,.xls,.xlsx,.csv,.png,.jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/png,image/jpeg"
+            onChange={(e) => {
+              if (e.target.files) {
+                const valid = filterFiles(e.target.files, setTranscriptError);
+                if (valid.length > 0) onAddTranscripts(valid);
+              }
+              e.target.value = "";
+            }}
             className="hidden"
             id="transcript-file-upload"
           />
@@ -723,6 +778,12 @@ export default function FormSection({
           <p className="text-red-600 text-xs font-semibold mt-3 flex items-center gap-1 animate-fadeIn">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             {errors.uploadedTranscripts}
+          </p>
+        )}
+        {transcriptError && (
+          <p className="text-red-600 text-xs font-semibold mt-3 flex items-center gap-1 animate-fadeIn">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {transcriptError}
           </p>
         )}
 
